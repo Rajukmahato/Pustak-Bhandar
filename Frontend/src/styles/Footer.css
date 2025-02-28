@@ -1,0 +1,28 @@
+
+
+footer {
+  background-color: #6a0dad;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.footer nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.footer nav ul li {
+  display: inline;
+  margin: 0 15px;
+}
+
+.footer nav ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+.footer nav ul li a:hover {
+  text-decoration: underline;
+}

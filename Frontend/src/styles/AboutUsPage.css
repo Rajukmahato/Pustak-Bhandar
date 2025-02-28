@@ -1,0 +1,58 @@
+.about-us-page-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f7f7f7;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 36px;
+  color: #4b0082;  /* Dark purple color */
+}
+
+.about-content, .mission-vision, .why-choose-us, .meet-our-team, .call-to-action {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.about-content h2, .mission-vision h2, .why-choose-us h2, .meet-our-team h2, .call-to-action h2 {
+  font-size: 28px;
+  color: #4b0082;  /* Dark purple color */
+  margin-bottom: 15px;
+}
+
+.about-content p, .mission-vision p, .why-choose-us ul, .meet-our-team p {
+  font-size: 16px;
+  color: #333;
+}
+
+.why-choose-us ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.why-choose-us ul li {
+  margin-bottom: 10px;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #6a0dad;  /* Purple color */
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.cta-button:hover {
+  background-color: #5a0a8b;  /* Darker purple */
+}

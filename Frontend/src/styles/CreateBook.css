@@ -1,0 +1,114 @@
+.create-book-page-container {
+  display: flex;
+  height: 100vh; /* Set the height to 100% of the viewport height */
+  overflow: hidden; /* Hide overflow to prevent scrolling */
+}
+
+.create-book-main-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #f7f7f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+.create-book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.create-book-header h2 {
+  color: #4b0082;
+}
+
+.back-btn {
+  background-color: #6a0dad;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #5b0a9a;
+}
+
+.create-book-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+.form-columns {
+  display: flex;
+  gap: 2rem;
+  flex: 1;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  overflow: hidden; /* Prevent scrolling */
+  justify-content: space-between;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 90%;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.submit-btn {
+  background-color: #6a0dad;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  align-self: center;
+}
+
+.submit-btn:hover {
+  background-color: #5b0a9a;
+}
+
+.message {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #4b0082;
+}
