@@ -2,15 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import '../styles/ProfilePage.css';
-import Navbar from '../components/Navbar'; // Assuming Navbar is a global component
-import Footer from '../components/Footer'; // Assuming Footer is a global component
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "",
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -18,41 +15,62 @@ const ProfilePage = () => {
     location: "",
     website: ""
   });
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updateStatus, setUpdateStatus] = useState({ type: '', message: '' });
   const navigate = useNavigate();
 
   // Get userId and token from local storage
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
 
-  // Fetch user profile details from the backend
+  // Check authentication
+  useEffect(() => {
+    if (!token || !userId) {
+      navigate("/signin");
+    }
+  }, [token, userId, navigate]);
+
+  // Fetch user profile details
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:5005/api/profile/${userId}`, {
+        setLoading(true);
+        setError("");
+        
+        const response = await axios.get(`http://localhost:5005/api/profile`, {
           headers: {
             Authorization: `Bearer ${token}`
-          },
-          withCredentials: true,
+          }
         });
-        setUser(response.data.user);
+
+        const userData = response.data.user;
+        setUser(userData);
         setFormData({
-          name: response.data.user.name || "",
-          email: response.data.user.email || "",
-          password: "",
+          name: userData.name || "",
+          email: userData.email || "",
           oldPassword: "",
           newPassword: "",
           confirmPassword: "",
-          bio: response.data.user.userProfile.bio || "",
-          location: response.data.user.userProfile.location || "",
-          website: response.data.user.userProfile.website || ""
+          bio: userData.userProfile?.bio || "",
+          location: userData.userProfile?.location || "",
+          website: userData.userProfile?.website || ""
         });
       } catch (error) {
-        setError("Error fetching profile. Please log in again.");
+        console.error('Error fetching profile:', error);
+        setError(error.response?.data?.message || "Error fetching profile. Please log in again.");
+        if (error.response?.status === 401) {
+          navigate("/signin");
+        }
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUserProfile();
-  }, [userId, token]);
+
+    if (token && userId) {
+      fetchUserProfile();
+    }
+  }, [token, userId, navigate]);
 
   // Handle input change
   const handleChange = (e) => {
@@ -60,16 +78,21 @@ const ProfilePage = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Clear any status messages when user starts typing
+    if (updateStatus.message) {
+      setUpdateStatus({ type: '', message: '' });
+    }
   };
 
-  // Handle update profile form submission
+  // Handle update profile
   const handleUpdate = async (e) => {
     e.preventDefault();
+    setUpdateStatus({ type: '', message: '' });
+    
     try {
       const response = await axios.put(
         "http://localhost:5005/api/profile",
-        { 
-          userId,
+        {
           bio: formData.bio,
           location: formData.location,
           website: formData.website
@@ -77,197 +100,241 @@ const ProfilePage = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`
-          },
-          withCredentials: true
+          }
         }
       );
-      alert("Profile updated successfully!");
+      
       setUser(response.data.user);
+      setUpdateStatus({
+        type: 'success',
+        message: 'Profile updated successfully!'
+      });
     } catch (error) {
-      setError("Error updating profile. Please try again.");
+      console.error('Error updating profile:', error);
+      setUpdateStatus({
+        type: 'error',
+        message: error.response?.data?.message || 'Error updating profile. Please try again.'
+      });
     }
   };
 
-  // Handle change password form submission
+  // Handle password change
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    setUpdateStatus({ type: '', message: '' });
+
     if (formData.newPassword !== formData.confirmPassword) {
-      setError("New passwords do not match.");
+      setUpdateStatus({
+        type: 'error',
+        message: 'New passwords do not match.'
+      });
       return;
     }
+
     try {
       await axios.put(
         "http://localhost:5005/api/auth/users/change-password",
-        { oldPassword: formData.oldPassword, newPassword: formData.newPassword },
+        {
+          oldPassword: formData.oldPassword,
+          newPassword: formData.newPassword
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`
-          },
-          withCredentials: true
+          }
         }
       );
-      alert("Password changed successfully!");
-      setFormData({ ...formData, oldPassword: "", newPassword: "", confirmPassword: "" });
+
+      setUpdateStatus({
+        type: 'success',
+        message: 'Password changed successfully!'
+      });
+      setFormData(prev => ({
+        ...prev,
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      }));
     } catch (error) {
-      setError("Error changing password. Please try again.");
+      console.error('Error changing password:', error);
+      setUpdateStatus({
+        type: 'error',
+        message: error.response?.data?.message || 'Error changing password. Please try again.'
+      });
     }
   };
 
-  // Handle delete account
+  // Handle account deletion
   const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+
     try {
-      const response = await axios.delete(`http://localhost:5005/api/users/${userId}`, {
+      await axios.delete(`http://localhost:5005/api/auth/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
-        },
-        withCredentials: true,
+        }
       });
-      alert("Account deleted successfully!");
+
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       navigate("/signin");
     } catch (error) {
-      setError("Error deleting account. Please try again.");
+      console.error('Error deleting account:', error);
+      setUpdateStatus({
+        type: 'error',
+        message: error.response?.data?.message || 'Error deleting account. Please try again.'
+      });
     }
   };
 
   const handleLogout = () => {
-    // Remove token and userId from local storage
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
-    // Perform logout logic
     navigate("/signin");
   };
 
-  if (!user) return <p>Loading...</p>;
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!user) return <div className="error">Please log in to view your profile</div>;
 
   return (
-    <>
-      <div className="profile-page-container">
-        <header className="header">
-          <h1>Manage Your Profile</h1>
-          <p>Here you can view and update your personal information, change your password, or delete your account.</p>
-        </header>
+    <div className="profile-page-container">
+      <header className="header">
+        <h1>Manage Your Profile</h1>
+        <p>Here you can view and update your personal information, change your password, or delete your account.</p>
+      </header>
 
-        <section className="profile-info">
-          <h2>Account Details</h2>
-          <form onSubmit={handleUpdate}>
-            <div className="form-group">
-              <label htmlFor="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+      {updateStatus.message && (
+        <div className={`status-message ${updateStatus.type}`}>
+          {updateStatus.message}
+        </div>
+      )}
 
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+      <section className="profile-info">
+        <h2>Account Details</h2>
+        <form onSubmit={handleUpdate}>
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="bio">Bio</label>
-              <textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-              ></textarea>
-            </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              disabled
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="bio">Bio</label>
+            <textarea
+              id="bio"
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              rows="4"
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="website">Website</label>
-              <input
-                type="text"
-                id="website"
-                name="website"
-                value={formData.website}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="location">Location</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+            />
+          </div>
 
-            {error && <p className="error">{error}</p>}
+          <div className="form-group">
+            <label htmlFor="website">Website</label>
+            <input
+              type="url"
+              id="website"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              placeholder="https://"
+            />
+          </div>
 
-            <button type="submit" className="update-btn">Save Changes</button>
-          </form>
-        </section>
+          <button type="submit" className="update-btn">Save Changes</button>
+        </form>
+      </section>
 
-        <section className="change-password">
-          <h2>Change Password</h2>
-          <form onSubmit={handleChangePassword}>
-            <div className="form-group">
-              <label htmlFor="oldPassword">Old Password</label>
-              <input
-                type="password"
-                id="oldPassword"
-                name="oldPassword"
-                value={formData.oldPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
+      <section className="change-password">
+        <h2>Change Password</h2>
+        <form onSubmit={handleChangePassword}>
+          <div className="form-group">
+            <label htmlFor="oldPassword">Current Password</label>
+            <input
+              type="password"
+              id="oldPassword"
+              name="oldPassword"
+              value={formData.oldPassword}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="newPassword">New Password</label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="newPassword">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              name="newPassword"
+              value={formData.newPassword}
+              onChange={handleChange}
+              required
+              minLength="6"
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm New Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm New Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength="6"
+            />
+          </div>
 
-            {error && <p className="error">{error}</p>}
+          <button type="submit" className="change-password-btn">Change Password</button>
+        </form>
+      </section>
 
-            <button type="submit" className="update-btn">Change Password</button>
-          </form>
-        </section>
-
-        <section className="delete-account">
-          <h2>Delete Account</h2>
-          <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-          <button onClick={handleDelete} className="delete-btn">Delete Account</button>
-        </section>
-
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
-      </div>
-    </>
+      <section className="danger-zone">
+        <h2>Danger Zone</h2>
+        <div className="action-buttons">
+          <button onClick={handleLogout} className="logout-btn">
+            Log Out
+          </button>
+          <button onClick={handleDelete} className="delete-account-btn">
+            Delete Account
+          </button>
+        </div>
+      </section>
+    </div>
   );
 };
 

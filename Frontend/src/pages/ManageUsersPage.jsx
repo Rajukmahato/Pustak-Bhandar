@@ -31,7 +31,11 @@ const ManageUsersPage = () => {
         },
         withCredentials: true,
       });
-      setUsers(response.data.users);
+      // Sort users alphabetically by name
+      const sortedUsers = response.data.users.sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+      setUsers(sortedUsers);
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching users', error);
@@ -73,7 +77,7 @@ const ManageUsersPage = () => {
   const handleMakeAdmin = async (id) => {
     if (window.confirm('Are you sure you want to make this user an admin?')) {
       try {
-        await axios.put(`http://localhost:5005/api/auth/users/${id}/make-admin`, {}, {
+        await axios.put(`http://localhost:5005/auth/users/${id}/make-admin`, {}, {
           headers: {
             Authorization: `Bearer ${token}`
           },
@@ -87,7 +91,7 @@ const ManageUsersPage = () => {
   };
 
   return (
-    <div className="manage-users-page-container">
+    <div className="manage-users-container">
       <AdminSidePanel />
       <div className="main-content">
         <header className="header">
@@ -106,47 +110,53 @@ const ManageUsersPage = () => {
             <option value="user">User</option>
           </select>
         </div>
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Account Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.isAdmin ? 'Admin' : 'User'}</td>
-                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <button onClick={() => handleEdit(user.id)}>Edit</button>
-                  <button onClick={() => handleDelete(user.id)}>Delete</button>
-                  {!user.isAdmin && (
-                    <button onClick={() => handleMakeAdmin(user.id)}>Make Admin</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="pagination">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              className={`page-btn ${index + 1 === currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </button>
-          ))}
+        <div className="manage-users-table-container">
+          <div className="manage-users-table-scroll">
+            <table className="manage-users-table">
+              <thead>
+                <tr className="manage-users-table-header-row">
+                  <th>No.</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Account Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user, index) => (
+                  <tr key={user.id} className="manage-users-table-row">
+                    <td>{(currentPage - 1) * 10 + index + 1}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.isAdmin ? 'Admin' : 'User'}</td>
+                    <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <button onClick={() => handleEdit(user.id)}>Edit</button>
+                      <button onClick={() => handleDelete(user.id)}>Delete</button>
+                      {!user.isAdmin && (
+                        <button onClick={() => handleMakeAdmin(user.id)}>Make Admin</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+        {totalPages > 1 && (
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                className={`page-btn ${index + 1 === currentPage ? 'active' : ''}`}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

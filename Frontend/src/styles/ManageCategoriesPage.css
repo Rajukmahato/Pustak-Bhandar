@@ -1,74 +1,313 @@
-.manage-categories-page-container {
+.manage-categories-container {
   display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f7f7f7;
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
-  background-color: #f7f7f7;
+  padding: 1.5rem;
+  margin: 0.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 1rem);
+  overflow: hidden;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 20px;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .header h1 {
-  font-size: 36px;
+  font-size: 1.75rem;
   color: #6a0dad;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(106, 13, 173, 0.1);
 }
 
 .controls {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
-.controls input,
-.controls button {
-  padding: 10px;
-  font-size: 16px;
-  margin-right: 10px;
+.controls input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.875rem;
 }
 
-.categories-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+.controls input:focus {
+  outline: none;
+  border-color: #6a0dad;
+  box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.1);
 }
 
-.categories-table th,
-.categories-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-}
-
-.categories-table th {
+.add-category-btn {
+  padding: 0.5rem 1rem;
   background-color: #6a0dad;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.add-category-btn:hover {
+  background-color: #4a0b77;
+  transform: translateY(-1px);
+}
+
+/* Table styles matching ManageBooks */
+.manage-categories-table-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.manage-categories-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: white;
+}
+
+.manage-categories-table-scroll {
+  overflow-y: auto;
+  height: calc(100% - 40px);
+  scrollbar-width: thin;
+  scrollbar-color: #6a0dad #f0f0f0;
+}
+
+.manage-categories-table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.manage-categories-table-scroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.manage-categories-table-scroll::-webkit-scrollbar-thumb {
+  background-color: #6a0dad;
+  border-radius: 4px;
+}
+
+.manage-categories-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.manage-categories-table-header-row {
+  background-color: #6a0dad;
+}
+
+.manage-categories-table th {
+  padding: 0.75rem;
+  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 2px solid #5a0b8b;
+}
+
+.manage-categories-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 0.875rem;
+}
+
+.manage-categories-table-row {
+  transition: background-color 0.2s ease;
+}
+
+.manage-categories-table-row:last-child td {
+  border-bottom: none;
+}
+
+.manage-categories-table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.manage-categories-table-row td button {
+  padding: 0.4rem 0.8rem;
+  margin: 0 0.25rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.manage-categories-table-row td button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.manage-categories-table-row td button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+.manage-categories-table-row td button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .pagination {
   display: flex;
   justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  background-color: white;
+  border-top: 1px solid #dee2e6;
+  flex-shrink: 0;
 }
 
 .page-btn {
-  background-color: #6a0dad;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  margin: 0 5px;
-  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #dee2e6;
+  background-color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  transition: all 0.2s;
 }
 
 .page-btn:hover {
-  background-color: #5a0a8b;
+  border-color: #6a0dad;
+  color: #6a0dad;
 }
 
 .page-btn.active {
-  background-color: #4a0072;
+  background-color: #6a0dad;
+  color: white;
+  border-color: #6a0dad;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
+
+.modal h2 {
+  color: #6a0dad;
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+}
+
+.modal input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.modal input:focus {
+  outline: none;
+  border-color: #6a0dad;
+  box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.1);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.modal-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.modal-save {
+  background-color: #6a0dad;
+  color: white;
+}
+
+.modal-save:hover {
+  background-color: #4a0b77;
+}
+
+.modal-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.modal-cancel:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    margin: 0.25rem;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .controls input {
+    width: 100%;
+  }
+
+  .add-category-btn {
+    width: 100%;
+  }
+
+  .modal {
+    width: 95%;
+    padding: 1rem;
+  }
 }

@@ -8,10 +8,8 @@ const Navbar = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
+    setIsLoggedIn(!!token);
+  }, [location]);
 
   return (
     <header className="navbar-header">

@@ -78,16 +78,15 @@ exports.signin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, email: user.email, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: '1h' });
 
     console.log("User signed in successfully:", user); // Log signed-in user
-    res.status(200).json({ message: "User signed in successfully", token, userId: user.id });
+    res.status(200).json({ message: "User signed in successfully", token, userId: user.id, isAdmin: user.isAdmin });
   } catch (error) {
     console.error("Error signing in:", error);
     res.status(500).json({ message: "Error signing in", error });
   }
 };
-
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.userId; // Assuming you have a way to get the authenticated user's ID
@@ -140,6 +139,14 @@ exports.restrictedAction = async (req, res) => {
 // Get total users count
 exports.getTotalUsersCount = async (req, res) => {
   try {
+    // Get the user making the request
+    const user = await User.findByPk(req.userId);
+    
+    // Check if user exists and is an admin
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: "Access denied. Admin privileges required." });
+    }
+
     const count = await User.count();
     res.status(200).json({ count });
   } catch (error) {
@@ -160,15 +167,18 @@ exports.getUsers = async (req, res) => {
     ];
   }
 
-  if (role) {
-    where.role = role;
+  if (role === 'admin') {
+    where.isAdmin = true;
+  } else if (role === 'user') {
+    where.isAdmin = false;
   }
 
   try {
     const { count, rows } = await User.findAndCountAll({
       where,
-      limit,
+      limit: parseInt(limit),
       offset,
+      order: [['name', 'ASC']]
     });
     const totalPages = Math.ceil(count / limit);
     res.status(200).json({ users: rows, totalPages });

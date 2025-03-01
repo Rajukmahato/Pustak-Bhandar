@@ -1,0 +1,87 @@
+/* Admin Theme Styles */
+.admin-container {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Common Admin Components */
+.admin-card {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  margin: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.admin-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.admin-input {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  width: 100%;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.admin-table th {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Dark Mode Styles */
+[data-theme="dark"] .admin-container {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .admin-card {
+  background-color: var(--surface-color);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .admin-input {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .admin-table th {
+  background-color: var(--primary-color);
+}
+
+[data-theme="dark"] .admin-table td {
+  border-color: var(--border-color);
+} 

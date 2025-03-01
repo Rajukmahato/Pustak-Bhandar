@@ -24,7 +24,10 @@ const ManageCategoriesPage = () => {
           limit: 10,
         },
       });
-      setCategories(response.data.categories);
+      const sortedCategories = response.data.categories.sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching categories', error);
@@ -72,7 +75,7 @@ const ManageCategoriesPage = () => {
 
   return (
     
-    <div className="manage-categories-page-container">
+    <div className="manage-categories-container">
       <AdminSidePanel />
       <div className="main-content">
         <header className="header">
@@ -99,42 +102,48 @@ const ManageCategoriesPage = () => {
           />
           <button onClick={handleAddCategory}>Add Category</button>
         </div>
-        <table className="categories-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Category Name</th>
-              <th>Description</th>
-              <th>Created At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr key={category.id}>
-                <td>{category.id}</td>
-                <td>{category.name}</td>
-                <td>{category.description}</td>
-                <td>{new Date(category.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <button onClick={() => handleEditCategory(category.id, prompt('New name:', category.name), prompt('New description:', category.description))}>Edit</button>
-                  <button onClick={() => handleDeleteCategory(category.id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="pagination">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              className={`page-btn ${index + 1 === currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </button>
-          ))}
+        <div className="manage-categories-table-container">
+          <div className="manage-categories-table-scroll">
+            <table className="manage-categories-table">
+              <thead>
+                <tr className="manage-categories-table-header-row">
+                  <th>No.</th>
+                  <th>Category Name</th>
+                  <th>Description</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((category, index) => (
+                  <tr key={category.id} className="manage-categories-table-row">
+                    <td>{(currentPage - 1) * 10 + index + 1}</td>
+                    <td>{category.name}</td>
+                    <td>{category.description}</td>
+                    <td>{new Date(category.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <button onClick={() => handleEditCategory(category.id, prompt('New name:', category.name), prompt('New description:', category.description))}>Edit</button>
+                      <button onClick={() => handleDeleteCategory(category.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+        {totalPages > 1 && (
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                className={`page-btn ${index + 1 === currentPage ? 'active' : ''}`}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,66 @@
+:root {
+  /* Theme Colors */
+  --primary-color: #6a0dad;
+  --secondary-color: #4a0b77;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --surface-color: #ffffff;
+  --error-color: #dc3545;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+
+  /* Typography */
+  --font-family: Arial, sans-serif;
+  --font-size: 16px;
+  --heading-1: 2rem;
+  --heading-2: 1.5rem;
+  --heading-3: 1.25rem;
+  --text-small: 0.875rem;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border */
+  --border-radius: 4px;
+  --border-width: 1px;
+  --border-color: #dddddd;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+
+  /* Z-index */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal: 1040;
+  --z-index-popover: 1050;
+  --z-index-tooltip: 1060;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --text-color: #ffffff;
+  --background-color: #1a1a1a;
+  --surface-color: #2d2d2d;
+  --border-color: #4d4d4d;
+  
+  /* Adjust other colors for dark mode */
+  --primary-color: #8a2be2;
+  --secondary-color: #6a0dad;
+  --error-color: #ff4d4d;
+  --success-color: #4caf50;
+  --warning-color: #ffeb3b;
+  --info-color: #29b6f6;
+} 

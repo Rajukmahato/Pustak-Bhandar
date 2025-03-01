@@ -4,41 +4,49 @@ const cors = require("cors");
 const bookRoutes = require("./routes/bookRoutes");
 const userRoutes = require("./routes/userRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 const sequelize = require("./config/db");
 const bodyParser = require("body-parser");
-const categoryRoutes = require("./routes/categoryRoutes");
+const path = require('path');
 
-// Import models
-require('./models/contact');
-
+// Load environment variables
 dotenv.config();
 
+// Create Express app
 const app = express();
 
-// Configure CORS options
-const corsOptions = {
-  origin: 'http://localhost:5173', // Allow only this origin
-  credentials: true,
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-};
-
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-app.use(express.json());
+// Middleware
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(categoryRoutes);
-app.use("/api", userRoutes);
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Import models
+require('./models');
+
+// Routes
 app.use(bookRoutes);
+app.use(userRoutes);
 app.use(contactRoutes);
+app.use(categoryRoutes);
 
-const PORT = process.env.PORT || 5005;
-
-sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error',
+    error: err.message
   });
-}).catch((err) => {
-  console.error("Error synchronizing the database:", err);
+});
+
+// Start server
+const PORT = process.env.PORT || 5005;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

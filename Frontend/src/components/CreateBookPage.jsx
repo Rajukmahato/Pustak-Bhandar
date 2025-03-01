@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AdminSidePanel from '../components/AdminSidePanel';
@@ -8,15 +8,30 @@ const CreateBook = () => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
-  const [genre, setGenre] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [publisher, setPublisher] = useState('');
   const [publicationDate, setPublicationDate] = useState('');
   const [pageCount, setPageCount] = useState('');
   const [isbn, setIsbn] = useState('');
   const [coverImage, setCoverImage] = useState(null);
   const [message, setMessage] = useState('');
+  const [categories, setCategories] = useState([]);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:5005/api/categories');
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setMessage('Error loading categories. Please try again.');
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleFileChange = (e) => {
     setCoverImage(e.target.files[0]);
@@ -28,7 +43,7 @@ const CreateBook = () => {
     formData.append('title', title);
     formData.append('author', author);
     formData.append('description', description);
-    formData.append('genre', genre);
+    formData.append('categoryId', categoryId);
     formData.append('publisher', publisher);
     formData.append('publicationDate', publicationDate);
     formData.append('pageCount', pageCount);
@@ -40,7 +55,7 @@ const CreateBook = () => {
       title,
       author,
       description,
-      genre,
+      categoryId,
       publisher,
       publicationDate,
       pageCount,
@@ -54,10 +69,12 @@ const CreateBook = () => {
         },
       });
       setMessage('Book created successfully!');
+      // Dispatch custom event for dashboard update
+      window.dispatchEvent(new CustomEvent('bookDataChanged'));
       setTitle('');
       setAuthor('');
       setDescription('');
-      setGenre('');
+      setCategoryId('');
       setPublisher('');
       setPublicationDate('');
       setPageCount('');
@@ -110,14 +127,20 @@ const CreateBook = () => {
                 ></textarea>
               </div>
               <div className="form-group">
-                <label htmlFor="genre">Genre</label>
-                <input
-                  type="text"
-                  id="genre"
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
+                <label htmlFor="category">Category</label>
+                <select
+                  id="category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="form-column">

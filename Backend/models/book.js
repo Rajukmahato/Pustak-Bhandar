@@ -13,9 +13,13 @@ const Book = sequelize.define('Book', {
   description: {
     type: DataTypes.TEXT,
   },
-  genre: {
-    type: DataTypes.STRING,
-    allowNull: true
+  categoryId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Categories',
+      key: 'id'
+    }
   },
   coverImage: {
     type: DataTypes.STRING,
@@ -38,5 +42,12 @@ const Book = sequelize.define('Book', {
     allowNull: true
   }
 });
+
+Book.associate = function(models) {
+  Book.belongsTo(models.Category, {
+    foreignKey: 'categoryId',
+    as: 'category'
+  });
+};
 
 module.exports = Book;

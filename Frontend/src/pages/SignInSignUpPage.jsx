@@ -19,6 +19,7 @@ const AuthPage = () => {
   useEffect(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    // localStorage.removeItem('isAdmin');
   }, []);
 
   // Handle input changes
@@ -42,7 +43,7 @@ const AuthPage = () => {
           return;
         }
         // Handle Sign Up
-        response = await axios.post("http://localhost:5005/api/signup", {
+        response = await axios.post("http://localhost:5005/signup", {
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -57,14 +58,27 @@ const AuthPage = () => {
         setIsSignUp(false); // Switch to Sign In form
       } else {
         // Handle Sign In
-        response = await axios.post("http://localhost:5005/api/signin", {
+        response = await axios.post("http://localhost:5005/signin", {
           email: formData.email,
           password: formData.password,
         });
         toast.success("Sign In Successful!");
         localStorage.setItem('token', response.data.token); // Store JWT in local storage
         localStorage.setItem('userId', response.data.userId); // Store userId in local storage
-        navigate("/"); // Navigate to homepage
+        // localStorage.setItem('isAdmin', response.data.isAdmin); // Store isAdmin in local storage
+
+        // Log the isAdmin data
+        // console.log("isAdmin:", response.data.isAdmin);
+          
+        // Check if the user is an admin
+        if (response.data.isAdmin) {
+          console.log("isAdmin is true");
+          navigate("/admin");
+          window.location.reload();
+        } else {
+          console.log("isAdmin is false");
+          navigate("/");
+        }
       }
       console.log(response.data);
     } catch (error) {
@@ -157,8 +171,6 @@ const AuthPage = () => {
               </div>
             </>
           )}
-
-          {/* {error && <p className="error">{error}</p>} */}
 
           <button type="submit" className="auth-btn">
             {isSignUp ? "Sign Up" : "Sign In"}

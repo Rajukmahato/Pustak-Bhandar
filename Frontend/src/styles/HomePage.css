@@ -12,13 +12,14 @@ body {
   padding: 20px;
 }
 
+/* Hero Section */
 .hero {
   display: flex;
   align-items: center;
-  background-size: cover;
-  background-position: center;
-  padding: 100px 20px;
-  color: #6a0dad;
+  background-color: #f0e6ff;
+  border-radius: 15px;
+  margin-bottom: 40px;
+  overflow: hidden;
 }
 
 .hero-image {
@@ -26,125 +27,259 @@ body {
   background-image: url('../assets/Bannar.png');
   background-size: cover;
   background-position: center;
-  height: 300px; /* Adjust the height as needed */
+  height: 300px;
+  border-radius: 15px 0 0 15px;
 }
 
 .hero-content {
-  height: 160px;
-    display: flex;
-    flex: 1;
-    text-align: center;
-    padding: 20px;
-    position: relative;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    align-content: center;
+  flex: 1;
+  padding: 40px;
+  text-align: center;
 }
 
 .hero-content h1 {
-  margin: 0;
-  font-size: 36px;
-  margin-bottom: 20px;
+  margin: 0 0 30px 0;
+  font-size: 2.5em;
+  color: #6a0dad;
+  line-height: 1.2;
+}
+
+/* Search Container */
+.search-container {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .search-bar {
-  padding: 10px;
-  font-size: 16px;
-  width: 300px;
-  border-radius: 8px;
-  border: none;
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1.1em;
+  border: 2px solid #6a0dad;
+  border-radius: 30px;
+  background-color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(106, 13, 173, 0.1);
 }
 
-.featured-books, .categories, .why-us, .call-to-action {
+.search-bar:focus {
+  outline: none;
+  box-shadow: 0 4px 12px rgba(106, 13, 173, 0.2);
+  border-color: #8a2be2;
+}
+
+/* Categories Section */
+.categories {
   margin: 40px 0;
 }
 
-.featured-books h2, .categories h2, .why-us h2 {
-  font-size: 28px;
-  color: #6a0dad;
-  margin-bottom: 20px;
-}
-
-.books, .category-cards {
+.category-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
 }
 
-.book-item, .category-card {
+.category-card {
   background-color: white;
-  padding: 15px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 200px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
-.book-item img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(106, 13, 173, 0.15);
+  border-color: #6a0dad;
 }
 
-.book-item h3 {
-  font-size: 18px;
-  color: #6a0dad;
-  margin-bottom: 10px;
+.category-card.active {
+  background-color: #6a0dad;
+  color: white;
+  border-color: #6a0dad;
 }
 
-.book-item p {
-  font-size: 14px;
+.category-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+}
+
+.category-card p {
+  margin: 0;
+  font-size: 0.9em;
   color: #666;
 }
 
-.book-item a {
-  text-decoration: none;
-  color: #6a0dad;
-  font-weight: bold;
+.category-card.active p {
+  color: #f0e6ff;
+}
+
+/* Books Section */
+.featured-books {
+  margin: 40px 0;
+}
+
+.books {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+  padding: 20px 0;
+}
+
+.book-item {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
 }
 
 .book-item:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(106, 13, 173, 0.15);
 }
 
-.category-card {
+.book-item img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-bottom: 2px solid #f0e6ff;
+}
+
+.book-info {
   padding: 20px;
-  font-size: 18px;
-  color: #6a0dad;
-  cursor: pointer;
 }
 
-.category-card:hover {
-  background-color: #f0e6ff;
+.book-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: #6a0dad;
+}
+
+.book-info .author {
+  color: #666;
+  margin: 0 0 8px 0;
+  font-style: italic;
+}
+
+.book-info .category {
+  color: #6a0dad;
+  font-size: 0.9em;
+  margin: 0 0 15px 0;
+}
+
+.read-more {
+  display: inline-block;
+  padding: 8px 20px;
+  background-color: #6a0dad;
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.read-more:hover {
+  background-color: #8a2be2;
+}
+
+/* Why Us Section */
+.why-us {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  margin: 40px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.why-us h2 {
+  color: #6a0dad;
+  margin-bottom: 20px;
 }
 
 .why-us ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
 }
 
 .why-us ul li {
-  font-size: 16px;
+  padding: 15px;
+  background-color: #f0e6ff;
+  border-radius: 8px;
   color: #333;
-  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Call to Action */
+.call-to-action {
+  text-align: center;
+  margin: 40px 0;
 }
 
 .browse-books-btn {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 15px 40px;
   background-color: #6a0dad;
   color: white;
   text-decoration: none;
-  border-radius: 8px;
-  font-size: 18px;
+  border-radius: 30px;
+  font-size: 1.2em;
   font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(106, 13, 173, 0.2);
 }
 
 .browse-books-btn:hover {
-  background-color: #5a0a8b;
+  background-color: #8a2be2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(106, 13, 173, 0.3);
+}
+
+/* Loading and Error States */
+.loading, .error-message, .no-books {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2em;
+  color: #666;
+}
+
+.error-message {
+  color: #dc3545;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .hero-image {
+    width: 100%;
+    border-radius: 15px 15px 0 0;
+  }
+
+  .hero-content {
+    padding: 30px;
+  }
+
+  .hero-content h1 {
+    font-size: 2em;
+  }
+
+  .books {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .category-card {
+    width: 100%;
+    max-width: 300px;
+  }
 }

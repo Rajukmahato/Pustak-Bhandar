@@ -12,4 +12,12 @@ const Category = sequelize.define('Category', {
   }
 });
 
+// Define the association here
+Category.associate = function(models) {
+  Category.hasMany(models.Book, {
+    foreignKey: 'categoryId',
+    as: 'books'
+  });
+};
+
 module.exports = Category;

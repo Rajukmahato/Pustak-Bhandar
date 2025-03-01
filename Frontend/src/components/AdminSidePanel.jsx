@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaBook, FaUser, FaTags, FaCog, FaPlus, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaHome, FaBook, FaUser, FaTags, FaCog, FaPlus, FaSignOutAlt } from 'react-icons/fa';
 import '../styles/AdminSidePanel.css';
 
 const AdminSidePanel = () => {
@@ -49,10 +49,6 @@ const AdminSidePanel = () => {
         </ul>
       </nav>
       <div className="admin-panel-sidebar-footer">
-        <div className="admin-panel-profile" onClick={() => navigate('/profile')}>
-          <FaUserCircle />
-          {!isCollapsed && <span>Profile</span>}
-        </div>
         <div className="admin-panel-logout" onClick={handleLogout}>
           <FaSignOutAlt />
           {!isCollapsed && <span>Logout</span>}
