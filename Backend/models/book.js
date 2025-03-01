@@ -48,6 +48,12 @@ Book.associate = function(models) {
     foreignKey: 'categoryId',
     as: 'category'
   });
+
+  Book.belongsToMany(models.User, {
+    through: models.Favorite,
+    foreignKey: 'bookId',
+    as: 'favoritedBy'
+  });
 };
 
 module.exports = Book;

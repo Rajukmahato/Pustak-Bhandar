@@ -520,12 +520,10 @@
 .book-listing-actions {
   display: flex;
   gap: 10px;
-  margin: 10px 0;
-  flex-wrap: wrap;
+  margin-top: 15px;
 }
 
-.book-listing-favorite-btn,
-.book-listing-reading-list-btn {
+.book-listing-favorite-btn {
   padding: 8px 12px;
   border: 1px solid var(--primary-color);
   border-radius: 4px;
@@ -541,14 +539,12 @@
   justify-content: center;
 }
 
-.book-listing-favorite-btn:hover,
-.book-listing-reading-list-btn:hover {
+.book-listing-favorite-btn:hover {
   background-color: var(--primary-color);
   color: white;
 }
 
-.book-listing-favorite-btn.active,
-.book-listing-reading-list-btn.active {
+.book-listing-favorite-btn.active {
   background-color: var(--primary-color);
   color: white;
 }
@@ -563,20 +559,13 @@
   content: '♥';
 }
 
-.book-listing-reading-list-btn:before {
-  content: '📖';
-  margin-right: 5px;
-  font-size: 16px;
-}
-
 /* Responsive styles for the actions */
 @media (max-width: 768px) {
   .book-listing-actions {
     flex-direction: column;
   }
 
-  .book-listing-favorite-btn,
-  .book-listing-reading-list-btn {
+  .book-listing-favorite-btn {
     width: 100%;
   }
 }

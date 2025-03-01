@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { User, UserProfile } = require('../models');
+const { User, UserProfile, Book } = require('../models');
 const bcrypt = require("bcryptjs");
 const { Op } = require('sequelize');
 
@@ -18,6 +18,45 @@ exports.signup = async (req, res) => {
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ message: "Error creating user", error });
+  }
+};
+
+// Get User Profile
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findOne({
+      where: { id: userId },
+      include: [{
+        model: UserProfile,
+        as: 'userProfile',
+        attributes: ['bio', 'location', 'website']
+      }],
+      attributes: ['id', 'name', 'email', 'isAdmin']
+    });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      user: {
+        ...user.toJSON(),
+        password: undefined
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching user profile',
+      error: error.message 
+    });
   }
 };
 
@@ -87,39 +126,43 @@ exports.signin = async (req, res) => {
     res.status(500).json({ message: "Error signing in", error });
   }
 };
-exports.getProfile = async (req, res) => {
-  try {
-    const userId = req.userId; // Assuming you have a way to get the authenticated user's ID
-    const user = await User.findByPk(userId, {
-      include: {
-        model: UserProfile,
-        as: 'userProfile'
-      }
-    });
-    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
-    res.status(500).json({ message: 'Error fetching user profile', error });
-  }
-};
-
-// Get User Profile by ID
+// Get Profile By ID
 exports.getProfileById = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id, {
-      include: {
+    const { id } = req.params;
+    
+    const user = await User.findOne({
+      where: { id },
+      include: [{
         model: UserProfile,
-        as: 'userProfile'
+        as: 'userProfile',
+        attributes: ['bio', 'location', 'website']
+      }],
+      attributes: ['id', 'name', 'email', 'isAdmin']
+    });
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      user: {
+        ...user.toJSON(),
+        password: undefined
       }
     });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    res.status(200).json({ user });
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    res.status(500).json({ message: 'Error fetching user profile', error });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching user profile',
+      error: error.message 
+    });
   }
 };
 
@@ -154,107 +197,168 @@ exports.getTotalUsersCount = async (req, res) => {
   }
 };
 
-// Fetch all users with search and role filter
+// Get Users (with pagination and filters)
 exports.getUsers = async (req, res) => {
-  const { search, role, page = 1, limit = 10 } = req.query;
-  const offset = (page - 1) * limit;
-  const where = {};
-
-  if (search) {
-    where[Op.or] = [
-      { name: { [Op.iLike]: `%${search}%` } },
-      { email: { [Op.iLike]: `%${search}%` } }
-    ];
-  }
-
-  if (role === 'admin') {
-    where.isAdmin = true;
-  } else if (role === 'user') {
-    where.isAdmin = false;
-  }
-
   try {
+    const { page = 1, limit = 10, search } = req.query;
+    const offset = (page - 1) * limit;
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
     const { count, rows } = await User.findAndCountAll({
       where,
+      include: [{
+        model: UserProfile,
+        as: 'userProfile',
+        attributes: ['bio', 'location', 'website']
+      }],
+      attributes: ['id', 'name', 'email', 'isAdmin'],
       limit: parseInt(limit),
-      offset,
+      offset: parseInt(offset),
       order: [['name', 'ASC']]
     });
-    const totalPages = Math.ceil(count / limit);
-    res.status(200).json({ users: rows, totalPages });
+
+    res.status(200).json({
+      success: true,
+      users: rows,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page)
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users", error });
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users',
+      error: error.message
+    });
   }
 };
 
-// Update user details
+// Update User
 exports.updateUser = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, role } = req.body;
-
   try {
+    const { id } = req.params;
+    const { name, email, bio, location, website } = req.body;
+
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
+    // Update user basic info
     user.name = name;
     user.email = email;
-    user.role = role;
     await user.save();
 
-    res.status(200).json({ message: "User updated successfully", user });
+    // Update profile info
+    const profile = await UserProfile.findOne({ where: { userId: id } });
+    if (profile) {
+      profile.bio = bio;
+      profile.location = location;
+      profile.website = website;
+      await profile.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'User updated successfully',
+      user: {
+        ...user.toJSON(),
+        password: undefined,
+        userProfile: profile
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error updating user", error });
+    console.error('Error updating user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating user',
+      error: error.message
+    });
   }
 };
 
-// Delete user
+// Delete User
 exports.deleteUser = async (req, res) => {
-  const { id } = req.params;
-
   try {
+    const { id } = req.params;
+
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    // Find and delete the associated user profile
-    const profile = await UserProfile.findOne({ where: { userId: id } });
-    if (profile) {
-      await profile.destroy();
-    }
-
+    // Delete associated profile
+    await UserProfile.destroy({ where: { userId: id } });
+    
+    // Delete user
     await user.destroy();
-    res.status(200).json({ message: "User and profile deleted successfully" });
+
+    res.status(200).json({
+      success: true,
+      message: 'User and associated profile deleted successfully'
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting user and profile", error });
+    console.error('Error deleting user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting user',
+      error: error.message
+    });
   }
 };
 
 // Change Password
 exports.changePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const userId = req.userId; // Ensure this is correctly set by the authMiddleware
-
   try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
+    // Verify old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Old password is incorrect" });
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedNewPassword;
+    // Hash and save new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
     await user.save();
 
-    res.status(200).json({ message: "Password changed successfully" });
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error changing password", error });
+    console.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing password',
+      error: error.message
+    });
   }
 };
 
@@ -274,5 +378,89 @@ exports.makeAdmin = async (req, res) => {
     res.status(200).json({ message: "User promoted to admin successfully", user });
   } catch (error) {
     res.status(500).json({ message: "Error promoting user to admin", error });
+  }
+};
+
+// Get user's favorite books
+exports.getFavorites = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findByPk(userId, {
+      include: [{
+        model: Book,
+        as: 'favorites',
+        through: { attributes: [] } // Exclude join table attributes
+      }]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      favorites: user.favorites 
+    });
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching favorites',
+      error: error.message 
+    });
+  }
+};
+
+// Add a book to favorites
+exports.addFavorite = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { bookId } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await user.addFavorite(bookId);
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Book added to favorites successfully' 
+    });
+  } catch (error) {
+    console.error('Error adding favorite:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error adding book to favorites',
+      error: error.message 
+    });
+  }
+};
+
+// Remove a book from favorites
+exports.removeFavorite = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { bookId } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await user.removeFavorite(bookId);
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Book removed from favorites successfully' 
+    });
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error removing book from favorites',
+      error: error.message 
+    });
   }
 };

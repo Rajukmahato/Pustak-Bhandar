@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import '../styles/HomePage.css';
 
 const HomePage = () => {
@@ -11,6 +12,17 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+    if (token) {
+      fetchUserFavorites();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +63,81 @@ const HomePage = () => {
 
   const handleCategoryFilter = (categoryId) => {
     setSelectedCategory(categoryId);
+  };
+
+  const fetchUserFavorites = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFavorites([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://localhost:5005/api/favorites', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data && response.data.favorites) {
+        // Extract just the book IDs from the favorites array
+        const favoriteBookIds = response.data.favorites.map(book => book.id);
+        setFavorites(favoriteBookIds);
+      } else {
+        setFavorites([]);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setFavorites([]);
+      }
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const handleFavoriteToggle = async (bookId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+
+    try {
+      const isFavorite = favorites.includes(bookId);
+      
+      if (isFavorite) {
+        // Remove from favorites
+        await axios.delete(`http://localhost:5005/api/favorites/${bookId}`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setFavorites(favorites.filter(id => id !== bookId));
+      } else {
+        // Add to favorites
+        await axios.post('http://localhost:5005/api/favorites', 
+          { bookId },
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        setFavorites([...favorites, bookId]);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setFavorites([]);
+        navigate('/signin');
+      }
+      console.error('Error updating favorites:', error);
+    }
   };
 
   if (loading) {
@@ -107,14 +194,30 @@ const HomePage = () => {
           {filteredBooks.length > 0 ? (
             filteredBooks.map((book) => (
               <div key={book.id} className="book-item">
-                <img 
-                  src={book.coverImage ? `http://localhost:5005/${book.coverImage}` : '/default-book-cover.jpg'} 
-                  alt={book.title}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-book-cover.jpg';
-                  }}
-                />
+                <div className="book-cover">
+                  <img 
+                    src={book.coverImage ? `http://localhost:5005/${book.coverImage}` : '/default-book-cover.jpg'} 
+                    alt={book.title}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/default-book-cover.jpg';
+                    }}
+                  />
+                  {isLoggedIn && (
+                    <button
+                      className={`favorite-btn ${favorites.includes(book.id) ? 'is-favorite' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleFavoriteToggle(book.id);
+                      }}
+                    >
+                      {favorites.includes(book.id) ? <FaHeart /> : <FaRegHeart />}
+                    </button>
+                  )}
+                  {book.category && (
+                    <div className="category-badge">{book.category.name}</div>
+                  )}
+                </div>
                 <div className="book-info">
                   <h3>{book.title}</h3>
                   <p className="author">By {book.author}</p>

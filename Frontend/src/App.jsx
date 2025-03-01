@@ -11,6 +11,7 @@ import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import FAQsPage from './pages/FAQsPage';
 import ProfilePage from './pages/ProfilePage';
+import FavoritesPage from './pages/FavoritesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageBooksPage from './pages/ManageBooksPage';
 import ManageUsersPage from './pages/ManageUsersPage';
@@ -46,6 +47,7 @@ function App() {
             <Route path="/contact" element={<ContactUsPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/books" element={<ManageBooksPage />} />
             <Route path="/admin/users" element={<ManageUsersPage />} />

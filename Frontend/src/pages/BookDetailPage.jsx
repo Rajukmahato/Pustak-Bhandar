@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { FaStar, FaRegStar, FaComment, FaUser, FaClock, FaHeart, FaRegHeart } from 'react-icons/fa';
 import '../styles/BookDetailPage.css';
 
 const BookDetailPage = () => {
@@ -12,8 +13,17 @@ const BookDetailPage = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState('details');
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
     const fetchBookDetails = async () => {
       try {
         setLoading(true);
@@ -25,6 +35,26 @@ const BookDetailPage = () => {
           throw new Error('Book not found');
         }
         setBook(response.data.book);
+
+        // Check if book is in favorites if user is logged in
+        if (token) {
+          try {
+            const favResponse = await axios.get(`http://localhost:5005/api/favorites/${bookId}/check`, {
+              headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            setIsFavorite(favResponse.data.isFavorite);
+          } catch (error) {
+            if (error.response?.status === 401) {
+              localStorage.removeItem('token');
+              setIsLoggedIn(false);
+              setIsFavorite(false);
+            }
+            console.error('Error checking favorite status:', error);
+          }
+        }
 
         // Fetch related books from the same category
         if (response.data.book.categoryId) {
@@ -42,6 +72,8 @@ const BookDetailPage = () => {
             .sort((a, b) => a.title.localeCompare(b.title));
           setRelatedBooks(filteredBooks);
         }
+
+        fetchReviews();
       } catch (error) {
         console.error('Error fetching book details:', error);
         setError(error.response?.data?.message || error.message || "Error fetching book details. Please try again later.");
@@ -54,6 +86,118 @@ const BookDetailPage = () => {
       fetchBookDetails();
     }
   }, [bookId]);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5005/api/reviews/book/${bookId}`);
+      if (response.data.success) {
+        setReviews(response.data.reviews);
+        setAverageRating(response.data.averageRating);
+      } else {
+        console.error('Error in response:', response.data);
+        setReviews([]);
+        setAverageRating(0);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setReviews([]);
+      setAverageRating(0);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setShowReviewModal(false);
+      navigate('/signin');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5005/api/reviews', {
+        bookId: parseInt(bookId),
+        rating,
+        text: reviewText
+      }, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success) {
+        await fetchReviews();
+        setShowReviewModal(false);
+        setReviewText('');
+        setRating(0);
+      } else {
+        console.error('Error in response:', response.data);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setShowReviewModal(false);
+        navigate('/signin');
+      } else if (error.response?.status === 400) {
+        // Handle case where user has already reviewed
+        alert(error.response.data.message || 'You have already reviewed this book');
+      }
+      console.error('Error submitting review:', error);
+    }
+  };
+
+  const handleFavoriteToggle = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        await axios.delete(`http://localhost:5005/api/favorites/${bookId}`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } else {
+        // Add to favorites
+        await axios.post('http://localhost:5005/api/favorites', 
+          { bookId: parseInt(bookId) }, // Ensure bookId is a number
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setIsFavorite(false);
+        navigate('/signin');
+      } else if (error.response?.status === 400) {
+        console.error('Invalid request:', error.response?.data?.message);
+      }
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        i <= rating ? <FaStar key={i} className="star-filled" /> : <FaRegStar key={i} className="star-empty" />
+      );
+    }
+    return stars;
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
@@ -106,8 +250,17 @@ const BookDetailPage = () => {
   return (
     <div className="book-detail-page-container">
       <header className="header">
-        <h1>{book.title}</h1>
-        <p className="author-header">By {book.author}</p>
+        <div className="header-content">
+          <h1>{book.title}</h1>
+          <p className="author-header">By {book.author}</p>
+          <button 
+            className={`favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
+            onClick={handleFavoriteToggle}
+            title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+          >
+            {isFavorite ? <FaHeart /> : <FaRegHeart />}
+          </button>
+        </div>
       </header>
 
       <section className="book-detail">
@@ -140,6 +293,12 @@ const BookDetailPage = () => {
               onClick={() => setActiveTab('description')}
             >
               Description
+            </button>
+            <button 
+              className={`tab ${activeTab === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              Reviews ({reviews.length})
             </button>
             {book.category && (
               <button 
@@ -197,6 +356,56 @@ const BookDetailPage = () => {
               </div>
             )}
 
+            {activeTab === 'reviews' && (
+              <div className="reviews-content">
+                <div className="reviews-header">
+                  <h2>Reviews</h2>
+                  {isLoggedIn && (
+                    <button
+                      className="write-review-btn"
+                      onClick={() => setShowReviewModal(true)}
+                    >
+                      <FaComment /> Write a Review
+                    </button>
+                  )}
+                </div>
+
+                {reviews.length > 0 ? (
+                  <div className="reviews-list">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="review-item">
+                        <div className="review-header">
+                          <div className="review-user">
+                            <FaUser className="user-icon" />
+                            <span>{review.user.name}</span>
+                          </div>
+                          <div className="review-meta">
+                            <div className="review-stars">
+                              {renderStars(review.rating)}
+                            </div>
+                            <div className="review-date">
+                              <FaClock className="clock-icon" />
+                              <span>{formatDate(review.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="review-text">{review.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-reviews">
+                    <p>No reviews yet. {isLoggedIn ? 'Be the first to review!' : 'Sign in to be the first to review!'}</p>
+                    {!isLoggedIn && (
+                      <Link to="/signin" className="signin-link">
+                        Sign In to Write a Review
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'category' && book.category && (
               <div className="category-content">
                 <h3>{book.category.name}</h3>
@@ -248,6 +457,40 @@ const BookDetailPage = () => {
             ))}
           </div>
         </section>
+      )}
+
+      {showReviewModal && (
+        <div className="book-detail-modal-overlay">
+          <div className="book-detail-modal">
+            <h3>Write a Review for {book.title}</h3>
+            <div className="rating-input">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => setRating(star)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {star <= rating ? <FaStar className="star-filled" /> : <FaRegStar className="star-empty" />}
+                </span>
+              ))}
+            </div>
+            <textarea
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Share your thoughts about this book..."
+              rows="4"
+            />
+            <div className="modal-actions">
+              <button onClick={() => setShowReviewModal(false)}>Cancel</button>
+              <button 
+                onClick={handleSubmitReview}
+                disabled={!rating || !reviewText.trim()}
+              >
+                Submit Review
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

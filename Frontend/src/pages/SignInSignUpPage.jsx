@@ -43,7 +43,7 @@ const AuthPage = () => {
           return;
         }
         // Handle Sign Up
-        response = await axios.post("http://localhost:5005/signup", {
+        response = await axios.post("http://localhost:5005/api/users/signup", {
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -58,7 +58,7 @@ const AuthPage = () => {
         setIsSignUp(false); // Switch to Sign In form
       } else {
         // Handle Sign In
-        response = await axios.post("http://localhost:5005/signin", {
+        response = await axios.post("http://localhost:5005/api/users/signin", {
           email: formData.email,
           password: formData.password,
         });

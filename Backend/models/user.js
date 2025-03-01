@@ -26,6 +26,12 @@ User.associate = (models) => {
     foreignKey: 'userId',
     as: 'userProfile'
   });
+  
+  User.belongsToMany(models.Book, {
+    through: models.Favorite,
+    foreignKey: 'userId',
+    as: 'favoriteBooks'
+  });
 };
 
 module.exports = User;

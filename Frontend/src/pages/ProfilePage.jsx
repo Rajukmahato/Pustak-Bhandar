@@ -38,28 +38,35 @@ const ProfilePage = () => {
         setLoading(true);
         setError("");
         
-        const response = await axios.get(`http://localhost:5005/api/profile`, {
+        const response = await axios.get('http://localhost:5005/api/users/profile', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        const userData = response.data.user;
-        setUser(userData);
-        setFormData({
-          name: userData.name || "",
-          email: userData.email || "",
-          oldPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-          bio: userData.userProfile?.bio || "",
-          location: userData.userProfile?.location || "",
-          website: userData.userProfile?.website || ""
-        });
+        if (response.data.success && response.data.user) {
+          const userData = response.data.user;
+          setUser(userData);
+          setFormData({
+            name: userData.name || "",
+            email: userData.email || "",
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+            bio: userData.userProfile?.bio || "",
+            location: userData.userProfile?.location || "",
+            website: userData.userProfile?.website || ""
+          });
+        } else {
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
-        setError(error.response?.data?.message || "Error fetching profile. Please log in again.");
+        const errorMessage = error.response?.data?.message || error.message || "Error fetching profile. Please log in again.";
+        setError(errorMessage);
         if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
           navigate("/signin");
         }
       } finally {

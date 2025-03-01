@@ -22,6 +22,11 @@ const Navbar = () => {
           <li className={`navbar-item ${location.pathname === '/books' ? 'navbar-active' : ''}`}>
             <Link to="/books">Books</Link>
           </li>
+          {isLoggedIn && (
+            <li className={`navbar-item ${location.pathname === '/favorites' ? 'navbar-active' : ''}`}>
+              <Link to="/favorites">Favorites</Link>
+            </li>
+          )}
           <li className={`navbar-item ${location.pathname === '/about' ? 'navbar-active' : ''}`}>
             <Link to="/about">About Us</Link>
           </li>

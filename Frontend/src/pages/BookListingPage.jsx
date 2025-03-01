@@ -19,8 +19,6 @@ const BookListingPage = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favorites, setFavorites] = useState([]);
-  const [readingList, setReadingList] = useState([]);
-  const token = localStorage.getItem('token');
   const [reviews, setReviews] = useState({});
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState(null);
@@ -28,11 +26,14 @@ const BookListingPage = () => {
   const [rating, setRating] = useState(0);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
     if (token) {
-      fetchUserLists();
+      fetchUserFavorites();
+    } else {
+      setFavorites([]);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -111,20 +112,31 @@ const BookListingPage = () => {
     }
   };
 
-  const fetchUserLists = async () => {
+  const fetchUserFavorites = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFavorites([]);
+      return;
+    }
+
     try {
-      const [favoritesRes, readingListRes] = await Promise.all([
-        axios.get('http://localhost:5005/api/users/favorites', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5005/api/users/reading-list', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
-      setFavorites(favoritesRes.data.favorites || []);
-      setReadingList(readingListRes.data.readingList || []);
+      const response = await axios.get('http://localhost:5005/api/users/favorites', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data && Array.isArray(response.data.favorites)) {
+        setFavorites(response.data.favorites);
+      } else {
+        console.error('Invalid favorites data format:', response.data);
+        setFavorites([]);
+      }
     } catch (error) {
-      console.error('Error fetching user lists:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setFavorites([]);
+      }
+      console.error('Error fetching favorites:', error);
     }
   };
 
@@ -134,9 +146,16 @@ const BookListingPage = () => {
       const response = await axios.get('http://localhost:5005/api/reviews/summary', {
         params: { bookIds: bookIds.join(',') }
       });
-      setReviews(response.data.reviews);
+      
+      if (response.data && response.data.reviews) {
+        setReviews(response.data.reviews);
+      } else {
+        console.error('Invalid reviews data format:', response.data);
+        setReviews({});
+      }
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setReviews({});
     }
   };
 
@@ -163,41 +182,40 @@ const BookListingPage = () => {
   };
 
   const handleFavorite = async (bookId) => {
-    if (!isLoggedIn) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       navigate('/signin');
       return;
     }
+
     try {
       const isFavorite = favorites.includes(bookId);
       const endpoint = `http://localhost:5005/api/users/${isFavorite ? 'remove-favorite' : 'add-favorite'}`;
-      await axios.post(endpoint, { bookId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await fetchUserLists();
+      
+      const response = await axios.post(endpoint, 
+        { bookId },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+
+      if (response.data.success) {
+        await fetchUserFavorites(); // Refresh favorites list
+      } else {
+        console.error('Failed to update favorite:', response.data);
+      }
     } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setFavorites([]);
+        navigate('/signin');
+      }
       console.error('Error updating favorites:', error);
     }
   };
 
-  const handleReadingList = async (bookId) => {
-    if (!isLoggedIn) {
-      navigate('/signin');
-      return;
-    }
-    try {
-      const isInReadingList = readingList.includes(bookId);
-      const endpoint = `http://localhost:5005/api/users/${isInReadingList ? 'remove-from-reading-list' : 'add-to-reading-list'}`;
-      await axios.post(endpoint, { bookId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await fetchUserLists();
-    } catch (error) {
-      console.error('Error updating reading list:', error);
-    }
-  };
-
   const handleReviewClick = (bookId) => {
-    if (!isLoggedIn) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       navigate('/signin');
       return;
     }
@@ -206,20 +224,43 @@ const BookListingPage = () => {
   };
 
   const handleSubmitReview = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setShowReviewModal(false);
+      navigate('/signin');
+      return;
+    }
+
     try {
-      await axios.post(`http://localhost:5005/api/reviews`, {
+      if (!rating || !reviewText.trim()) {
+        console.error('Rating and review text are required');
+        return;
+      }
+
+      const response = await axios.post('http://localhost:5005/api/reviews', {
         bookId: selectedBookId,
         rating,
-        text: reviewText
+        text: reviewText.trim()
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      await fetchReviews();
-      setShowReviewModal(false);
-      setReviewText('');
-      setRating(0);
-      setSelectedBookId(null);
+
+      if (response.data.success) {
+        await fetchReviews(); // Refresh reviews
+        setShowReviewModal(false);
+        setReviewText('');
+        setRating(0);
+        setSelectedBookId(null);
+      } else {
+        console.error('Failed to submit review:', response.data);
+      }
     } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setShowReviewModal(false);
+        navigate('/signin');
+      }
       console.error('Error submitting review:', error);
     }
   };
@@ -351,12 +392,6 @@ const BookListingPage = () => {
                       onClick={() => handleFavorite(book.id)}
                     >
                       {favorites.includes(book.id) ? 'Remove from Favorites' : 'Add to Favorites'}
-                    </button>
-                    <button
-                      className={`book-listing-reading-list-btn ${readingList.includes(book.id) ? 'active' : ''}`}
-                      onClick={() => handleReadingList(book.id)}
-                    >
-                      {readingList.includes(book.id) ? 'Remove from Reading List' : 'Add to Reading List'}
                     </button>
                     <button
                       className="book-listing-review-btn"
