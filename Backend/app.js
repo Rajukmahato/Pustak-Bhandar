@@ -20,7 +20,9 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,12 +34,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 require('./models');
 
 // Routes
-app.use(bookRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/contact', contactRoutes);
-app.use(categoryRoutes);
-app.use('/api/favorites', favoriteRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/books', bookRoutes);
+app.use('/users', userRoutes);
+app.use('/contacts', contactRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/favorites', favoriteRoutes);
+app.use('/reviews', reviewRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -17,7 +17,7 @@ const ManageCategoriesPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/categories', {
+      const response = await axios.get('http://localhost:5005/categories', {
         params: {
           search: searchQuery,
           page: currentPage,
@@ -40,7 +40,7 @@ const ManageCategoriesPage = () => {
 
   const handleAddCategory = async () => {
     try {
-      await axios.post('http://localhost:5005/api/categories', { name: newCategoryName, description: newCategoryDescription });
+      await axios.post('http://localhost:5005/categories', { name: newCategoryName, description: newCategoryDescription });
       setNewCategoryName('');
       setNewCategoryDescription('');
       fetchCategories();
@@ -51,7 +51,7 @@ const ManageCategoriesPage = () => {
 
   const handleEditCategory = async (id, newName, newDescription) => {
     try {
-      await axios.put(`http://localhost:5005/api/categories/${id}`, { name: newName, description: newDescription });
+      await axios.put(`http://localhost:5005/categories/${id}`, { name: newName, description: newDescription });
       fetchCategories();
     } catch (error) {
       console.error('Error editing category', error);
@@ -61,7 +61,7 @@ const ManageCategoriesPage = () => {
   const handleDeleteCategory = async (id) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
-        await axios.delete(`http://localhost:5005/api/categories/${id}`);
+        await axios.delete(`http://localhost:5005/categories/${id}`);
         fetchCategories();
       } catch (error) {
         console.error('Error deleting category', error);

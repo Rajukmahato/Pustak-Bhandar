@@ -32,7 +32,7 @@ const EditBookPage = () => {
 
   const fetchBook = async () => {
     try {
-      const response = await axios.get(`http://localhost:5005/api/books/${id}`);
+      const response = await axios.get(`http://localhost:5005/books/${id}`);
       const bookData = response.data.book;
       setBook(bookData);
       setFormData({
@@ -58,7 +58,7 @@ const EditBookPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/categories');
+      const response = await axios.get('http://localhost:5005/categories');
       setCategories(response.data.categories);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -97,7 +97,7 @@ const EditBookPage = () => {
     });
 
     try {
-      await axios.put(`http://localhost:5005/api/admin/books/${id}`, submitData, {
+      await axios.put(`http://localhost:5005/books/admin/${id}`, submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider } from './context/ThemeContext';
 import Homepage from './pages/Homepage';
@@ -15,15 +15,18 @@ import FavoritesPage from './pages/FavoritesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageBooksPage from './pages/ManageBooksPage';
 import ManageUsersPage from './pages/ManageUsersPage';
+import ManageReviewsPage from './pages/ManageReviewsPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import ManageCategoriesPage from './pages/ManageCategoriesPage';
-import CreateBook from './components/CreateBookPage';
+import CreateBook from './pages/CreateBookPage';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import EditBookPage from './pages/EditBookPage';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/variables.css';
 import './App.css';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
+import { useLocation } from 'react-router-dom';
 
 function App() {
   const location = useLocation();
@@ -48,13 +51,48 @@ function App() {
             <Route path="/faqs" element={<FAQsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/books" element={<ManageBooksPage />} />
-            <Route path="/admin/users" element={<ManageUsersPage />} />
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
-            <Route path="/admin/categories" element={<ManageCategoriesPage />} />
-            <Route path="/admin/create-book" element={<CreateBook />} />
-            <Route path="/admin/edit-book/:id" element={<EditBookPage />} />
+            
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/books" element={
+              <ProtectedAdminRoute>
+                <ManageBooksPage />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedAdminRoute>
+                <ManageUsersPage />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/reviews" element={
+              <ProtectedAdminRoute>
+                <ManageReviewsPage />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/settings" element={
+              <ProtectedAdminRoute>
+                <AdminSettingsPage />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/categories" element={
+              <ProtectedAdminRoute>
+                <ManageCategoriesPage />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/create-book" element={
+              <ProtectedAdminRoute>
+                <CreateBook />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/edit-book/:id" element={
+              <ProtectedAdminRoute>
+                <EditBookPage />
+              </ProtectedAdminRoute>
+            } />
           </Routes>
         </main>
         {!hideFooter && <Footer />}

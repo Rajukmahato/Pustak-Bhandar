@@ -24,7 +24,7 @@ exports.signup = async (req, res) => {
 // Get User Profile
 exports.getProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId;
     
     const user = await User.findOne({
       where: { id: userId },

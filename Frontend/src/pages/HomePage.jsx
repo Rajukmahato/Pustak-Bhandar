@@ -29,12 +29,12 @@ const HomePage = () => {
       try {
         setLoading(true);
         // Fetch all books
-        const booksResponse = await axios.get("http://localhost:5005/api/books");
+        const booksResponse = await axios.get("http://localhost:5005/books");
         setBooks(booksResponse.data.books);
         setFilteredBooks(booksResponse.data.books);
 
         // Fetch categories
-        const categoriesResponse = await axios.get("http://localhost:5005/api/categories");
+        const categoriesResponse = await axios.get("http://localhost:5005/categories");
         setCategories(categoriesResponse.data.categories);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -73,7 +73,7 @@ const HomePage = () => {
     }
 
     try {
-      const response = await axios.get('http://localhost:5005/api/favorites', {
+      const response = await axios.get('http://localhost:5005/favorites', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -109,7 +109,7 @@ const HomePage = () => {
       
       if (isFavorite) {
         // Remove from favorites
-        await axios.delete(`http://localhost:5005/api/favorites/${bookId}`, {
+        await axios.delete(`http://localhost:5005/favorites/${bookId}`, {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -118,7 +118,7 @@ const HomePage = () => {
         setFavorites(favorites.filter(id => id !== bookId));
       } else {
         // Add to favorites
-        await axios.post('http://localhost:5005/api/favorites', 
+        await axios.post('http://localhost:5005/favorites', 
           { bookId },
           { 
             headers: { 

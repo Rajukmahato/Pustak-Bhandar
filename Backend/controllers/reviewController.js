@@ -215,4 +215,88 @@ exports.deleteReview = async (req, res) => {
       error: error.message
     });
   }
+};
+
+// Get all reviews (admin)
+exports.getAllReviews = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = '', bookId = '' } = req.query;
+    const offset = (page - 1) * limit;
+
+    const whereClause = {};
+    if (bookId) {
+      whereClause.bookId = bookId;
+    }
+    if (search) {
+      whereClause.text = {
+        [Op.like]: `%${search}%`
+      };
+    }
+
+    const { count, rows: reviews } = await Review.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Book,
+          as: 'book',
+          attributes: ['id', 'title']
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    res.status(200).json({
+      success: true,
+      reviews,
+      totalPages,
+      currentPage: parseInt(page),
+      totalReviews: count
+    });
+  } catch (error) {
+    console.error('Error fetching all reviews:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching reviews',
+      error: error.message
+    });
+  }
+};
+
+// Admin delete review
+exports.adminDeleteReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+
+    const review = await Review.findByPk(reviewId);
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found'
+      });
+    }
+
+    await review.destroy();
+
+    res.status(200).json({
+      success: true,
+      message: 'Review deleted successfully by admin'
+    });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting review',
+      error: error.message
+    });
+  }
 }; 

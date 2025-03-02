@@ -17,7 +17,7 @@ const BookPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://localhost:5005/api/categories");
+        const response = await axios.get("http://localhost:5005/categories");
         setCategories(response.data.categories);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -32,7 +32,7 @@ const BookPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get(`http://localhost:5005/api/books`, {
+        const response = await axios.get(`http://localhost:5005/books`, {
           params: {
             page: currentPage,
             limit: 12,

@@ -38,7 +38,7 @@ const ProfilePage = () => {
         setLoading(true);
         setError("");
         
-        const response = await axios.get('http://localhost:5005/api/users/profile', {
+        const response = await axios.get('http://localhost:5005/users/auth/profile', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -97,8 +97,9 @@ const ProfilePage = () => {
     setUpdateStatus({ type: '', message: '' });
     
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.put(
-        "http://localhost:5005/api/profile",
+        "http://localhost:5005/users/auth/profile",
         {
           bio: formData.bio,
           location: formData.location,
@@ -140,7 +141,7 @@ const ProfilePage = () => {
 
     try {
       await axios.put(
-        "http://localhost:5005/api/auth/users/change-password",
+        "http://localhost:5005/users/auth/change-password",
         {
           oldPassword: formData.oldPassword,
           newPassword: formData.newPassword
@@ -178,7 +179,7 @@ const ProfilePage = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5005/api/auth/users/${userId}`, {
+      await axios.delete(`http://localhost:5005/users/auth/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

@@ -39,16 +39,30 @@ const AuthPage = () => {
         // Check if passwords match
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match");
-          toast.error("Passwords do not match");
+          toast.error("Passwords do not match", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
           return;
         }
         // Handle Sign Up
-        response = await axios.post("http://localhost:5005/api/users/signup", {
+        response = await axios.post("http://localhost:5005/users/signup", {
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
-        toast.success("Sign Up Successful!");
+        toast.success("Sign Up Successful!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         setFormData({
           name: "",
           email: "",
@@ -58,23 +72,25 @@ const AuthPage = () => {
         setIsSignUp(false); // Switch to Sign In form
       } else {
         // Handle Sign In
-        response = await axios.post("http://localhost:5005/api/users/signin", {
+        response = await axios.post("http://localhost:5005/users/signin", {
           email: formData.email,
           password: formData.password,
         });
-        toast.success("Sign In Successful!");
-        localStorage.setItem('token', response.data.token); // Store JWT in local storage
-        localStorage.setItem('userId', response.data.userId); // Store userId in local storage
-        // localStorage.setItem('isAdmin', response.data.isAdmin); // Store isAdmin in local storage
-
-        // Log the isAdmin data
-        // console.log("isAdmin:", response.data.isAdmin);
+        toast.success("Sign In Successful!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userId', response.data.userId);
           
         // Check if the user is an admin
         if (response.data.isAdmin) {
           console.log("isAdmin is true");
           navigate("/admin");
-          window.location.reload();
         } else {
           console.log("isAdmin is false");
           navigate("/");
@@ -82,8 +98,16 @@ const AuthPage = () => {
       }
       console.log(response.data);
     } catch (error) {
-      setError(error.response.data.message || "Authentication failed. Please try again.");
-      toast.error(error.response.data.message || "Authentication failed. Please try again.");
+      const errorMessage = error.response?.data?.message || "Authentication failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 

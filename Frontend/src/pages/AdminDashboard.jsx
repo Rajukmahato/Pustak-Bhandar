@@ -25,18 +25,18 @@ const AdminDashboard = () => {
         return;
       }
 
+      const config = {
+        headers: { 
+          Authorization: `Bearer ${token}`
+        }
+      };
+
       // Fetch all data in parallel for better performance
       const [booksResponse, usersResponse, categoriesResponse, booksPerCategoryResponse] = await Promise.all([
-        axios.get('http://localhost:5005/api/books/count'),
-        axios.get('http://localhost:5005/api/users/count', {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        }),
-        axios.get('http://localhost:5005/api/categories/count'),
-        axios.get('http://localhost:5005/api/books/categories', {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        })
+        axios.get('http://localhost:5005/books/count'),
+        axios.get('http://localhost:5005/users/count', config),
+        axios.get('http://localhost:5005/categories/count'),
+        axios.get('http://localhost:5005/books/categories', config)
       ]);
       
       setTotalBooks(booksResponse.data.count);
@@ -44,41 +44,21 @@ const AdminDashboard = () => {
       setTotalCategories(categoriesResponse.data.count);
 
       // Log the raw response to check the data structure
-      console.log('Raw API Response:', booksPerCategoryResponse.data);
+      console.log('📊 Raw API Response:', booksPerCategoryResponse.data);
 
-      // Transform the array of category objects into the required format
-      const categoryData = booksPerCategoryResponse.data;
+      // Transform the array of category objects into an object with categoryName as key and count as value
+      const categoryData = booksPerCategoryResponse.data.reduce((acc, category) => {
+        acc[category.categoryName] = parseInt(category.count, 10);
+        return acc;
+      }, {});
+
+      console.log('📊 Transformed category data:', categoryData);
+      setBooksPerCategory(categoryData);
       
-      if (Array.isArray(categoryData)) {
-        // Transform the array into an object with categoryName as key and count as value
-        const transformedData = categoryData.reduce((acc, category) => {
-          acc[category.categoryName] = parseInt(category.count, 10); // Convert count to number
-          return acc;
-        }, {});
-
-        console.log('Transformed Data before sorting:', transformedData);
-
-        // Sort categories by count in ascending order
-        const sortedEntries = Object.entries(transformedData)
-          .sort(([,a], [,b]) => a - b); // Sort by count in ascending order
-
-        console.log('Sorted Entries:', sortedEntries);
-
-        const sortedCategories = sortedEntries.reduce((acc, [key, value]) => ({
-          ...acc,
-          [key]: value
-        }), {});
-
-        console.log('Final sorted categories:', sortedCategories);
-        setBooksPerCategory(sortedCategories);
-      } else {
-        console.error('Invalid category data format:', categoryData);
-        setBooksPerCategory({});
-      }
-
     } catch (error) {
-      console.error('Error fetching counts', error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      console.error('❌ Error fetching counts:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
         navigate('/signin');
       }
     } finally {

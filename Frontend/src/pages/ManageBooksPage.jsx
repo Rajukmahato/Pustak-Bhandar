@@ -20,7 +20,7 @@ const ManageBooksPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/categories');
+      const response = await axios.get('http://localhost:5005/categories');
       // Sort categories alphabetically
       const sortedCategories = response.data.categories.sort((a, b) => 
         a.name.localeCompare(b.name)
@@ -33,7 +33,7 @@ const ManageBooksPage = () => {
 
   const fetchBooks = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/books', {
+      const response = await axios.get('http://localhost:5005/books', {
         params: {
           search: searchQuery,
           categoryId: categoryFilter,
@@ -67,7 +67,7 @@ const ManageBooksPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        await axios.delete(`http://localhost:5005/api/books/${id}`);
+        await axios.delete(`http://localhost:5005/books/${id}`);
         // Dispatch custom event for dashboard update
         window.dispatchEvent(new CustomEvent('bookDataChanged'));
         fetchBooks();

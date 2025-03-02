@@ -58,7 +58,7 @@ const BookListingPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/categories');
+      const response = await axios.get('http://localhost:5005/categories');
       setCategories(response.data.categories);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -70,7 +70,7 @@ const BookListingPage = () => {
       setLoading(true);
       
       // Simplified sort parameter
-      const response = await axios.get('http://localhost:5005/api/books', {
+      const response = await axios.get('http://localhost:5005/books', {
         params: {
           page: currentPage,
           limit: 12,
@@ -120,12 +120,14 @@ const BookListingPage = () => {
     }
 
     try {
-      const response = await axios.get('http://localhost:5005/api/users/favorites', {
+      const response = await axios.get('http://localhost:5005/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.data && Array.isArray(response.data.favorites)) {
-        setFavorites(response.data.favorites);
+        // Extract just the book IDs from the favorites array
+        const favoriteBookIds = response.data.favorites.map(book => book.id);
+        setFavorites(favoriteBookIds);
       } else {
         console.error('Invalid favorites data format:', response.data);
         setFavorites([]);
@@ -142,21 +144,68 @@ const BookListingPage = () => {
 
   const fetchReviews = async () => {
     try {
+      if (!books || books.length === 0) return;
+      
       const bookIds = books.map(book => book.id);
-      const response = await axios.get('http://localhost:5005/api/reviews/summary', {
+      console.log('🔍 Fetching reviews for books:', bookIds);
+      
+      const response = await axios.get('http://localhost:5005/reviews/book/summary', {
         params: { bookIds: bookIds.join(',') }
       });
       
-      if (response.data && response.data.reviews) {
-        setReviews(response.data.reviews);
+      if (response.data && response.data.success) {
+        console.log('📊 Received review summary:', response.data.metadata);
+        setReviews(response.data.reviews || {});
       } else {
-        console.error('Invalid reviews data format:', response.data);
+        console.error('❌ Invalid reviews data format:', response.data);
         setReviews({});
       }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
-      setReviews({});
+      console.error('❌ Error fetching reviews:', error);
+      // Don't clear reviews on error, keep existing state
+      if (!error.response || error.response.status !== 401) {
+        setReviews({});
+      }
     }
+  };
+
+  const getRatingText = (bookId) => {
+    const review = reviews[bookId];
+    if (!review) return 'No reviews yet';
+    
+    const { averageRating, totalReviews, ratingDistribution } = review;
+    if (totalReviews === 0) return 'No reviews yet';
+    
+    const ratingText = `${averageRating.toFixed(1)} out of 5`;
+    const reviewText = `${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}`;
+    
+    return `${ratingText} (${reviewText})`;
+  };
+
+  const renderRatingDistribution = (bookId) => {
+    const review = reviews[bookId];
+    if (!review || !review.ratingDistribution) return null;
+    
+    const { ratingDistribution } = review;
+    const total = Object.values(ratingDistribution).reduce((a, b) => a + b, 0);
+    
+    return (
+      <div className="rating-distribution" title="Rating distribution">
+        {[5, 4, 3, 2, 1].map(stars => {
+          const count = ratingDistribution[stars] || 0;
+          const percentage = total > 0 ? (count / total) * 100 : 0;
+          return (
+            <div key={stars} className="rating-bar">
+              <span className="stars">{stars}★</span>
+              <div className="bar-container">
+                <div className="bar" style={{ width: `${percentage}%` }} />
+              </div>
+              <span className="count">{count}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const handleSearch = (e) => {
@@ -184,32 +233,29 @@ const BookListingPage = () => {
   const handleFavorite = async (bookId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/signin');
+      navigate('/login');
       return;
     }
 
-    try {
-      const isFavorite = favorites.includes(bookId);
-      const endpoint = `http://localhost:5005/api/users/${isFavorite ? 'remove-favorite' : 'add-favorite'}`;
-      
-      const response = await axios.post(endpoint, 
-        { bookId },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
+    const isFavorite = favorites.includes(bookId);
+    const config = {
+      headers: { Authorization: `Bearer ${token}` }
+    };
 
-      if (response.data.success) {
-        await fetchUserFavorites(); // Refresh favorites list
+    try {
+      if (isFavorite) {
+        await axios.delete(`http://localhost:5005/favorites/${bookId}`, config);
+        setFavorites(favorites.filter(id => id !== bookId));
       } else {
-        console.error('Failed to update favorite:', response.data);
+        await axios.post('http://localhost:5005/favorites', { bookId }, config);
+        setFavorites([...favorites, bookId]);
       }
     } catch (error) {
+      console.error('Error updating favorite:', error);
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         setIsLoggedIn(false);
-        setFavorites([]);
-        navigate('/signin');
       }
-      console.error('Error updating favorites:', error);
     }
   };
 
@@ -237,7 +283,7 @@ const BookListingPage = () => {
         return;
       }
 
-      const response = await axios.post('http://localhost:5005/api/reviews', {
+      const response = await axios.post('http://localhost:5005/reviews/book', {
         bookId: selectedBookId,
         rating,
         text: reviewText.trim()
@@ -375,9 +421,10 @@ const BookListingPage = () => {
                   <div className="stars">
                     {renderStars(reviews[book.id]?.averageRating || 0)}
                   </div>
-                  <span className="review-count">
-                    {reviews[book.id]?.totalReviews || 0} reviews
+                  <span className="review-count" title="Click for rating distribution">
+                    {getRatingText(book.id)}
                   </span>
+                  {viewMode === 'list' && renderRatingDistribution(book.id)}
                 </div>
 
                 <div className="book-listing-meta">

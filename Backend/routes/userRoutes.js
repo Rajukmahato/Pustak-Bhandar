@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Public routes
 router.post('/signup', userController.signup);
@@ -13,15 +13,15 @@ router.post('/signin', userController.signin);
 // router.post('/favorites/remove', authMiddleware, userController.removeFavorite);
 
 // Protected routes - require authentication
-router.get('/profile', authMiddleware, userController.getProfile);
-router.put('/profile', authMiddleware, userController.updateProfile);
-router.get('/profile/:id', authMiddleware, userController.getProfileById);
-router.get("/api/users/count", authMiddleware, userController.getTotalUsersCount);
-router.get('/api/users', authMiddleware, userController.getUsers);
-router.put('/users/:id', authMiddleware, userController.updateUser);
-router.delete('/auth/users/:id', authMiddleware, userController.deleteUser);
-router.put('/auth/users/change-password', authMiddleware, userController.changePassword);
-router.put('/auth/users/:id/make-admin', authMiddleware, userController.makeAdmin);
+router.get('/auth/profile', authMiddleware, userController.getProfile);
+router.put('/auth/profile', authMiddleware, userController.updateProfile);
+router.get('/auth/profile/:id', authMiddleware, userController.getProfileById);
+router.get("/count", authMiddleware, userController.getTotalUsersCount);
+router.get('/auth', authMiddleware, userController.getUsers);
+router.put('/auth/:id', authMiddleware, userController.updateUser);
+router.delete('/auth/:id', authMiddleware, userController.deleteUser);
+router.put('/auth/change-password', authMiddleware, userController.changePassword);
+router.put('/auth/:id/make-admin', authMiddleware, userController.makeAdmin);
 
 
 module.exports = router;

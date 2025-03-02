@@ -18,7 +18,7 @@ const SearchResultsPage = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.get(`http://localhost:5005/api/books/search`, {
+      const response = await axios.get(`http://localhost:5005/books/search`, {
         params: { query }
       });
       setResults(response.data.books);

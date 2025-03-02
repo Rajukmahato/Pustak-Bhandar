@@ -30,7 +30,7 @@ const BookDetailPage = () => {
         setError("");
         
         // Fetch book details
-        const response = await axios.get(`http://localhost:5005/api/books/${bookId}`);
+        const response = await axios.get(`http://localhost:5005/books/${bookId}`);
         if (!response.data || !response.data.book) {
           throw new Error('Book not found');
         }
@@ -39,7 +39,7 @@ const BookDetailPage = () => {
         // Check if book is in favorites if user is logged in
         if (token) {
           try {
-            const favResponse = await axios.get(`http://localhost:5005/api/favorites/${bookId}/check`, {
+            const favResponse = await axios.get(`http://localhost:5005/favorites/${bookId}/check`, {
               headers: { 
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -58,7 +58,7 @@ const BookDetailPage = () => {
 
         // Fetch related books from the same category
         if (response.data.book.categoryId) {
-          const relatedResponse = await axios.get(`http://localhost:5005/api/books`, {
+          const relatedResponse = await axios.get(`http://localhost:5005/books`, {
             params: {
               categoryId: response.data.book.categoryId,
               limit: 6, // Increased limit to 6 related books
@@ -89,7 +89,13 @@ const BookDetailPage = () => {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`http://localhost:5005/api/reviews/book/${bookId}`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:5005/reviews/book/${bookId}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.data.success) {
         setReviews(response.data.reviews);
         setAverageRating(response.data.averageRating);
@@ -114,7 +120,7 @@ const BookDetailPage = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5005/api/reviews', {
+      const response = await axios.post('http://localhost:5005/reviews/book/', {
         bookId: parseInt(bookId),
         rating,
         text: reviewText
@@ -157,7 +163,7 @@ const BookDetailPage = () => {
     try {
       if (isFavorite) {
         // Remove from favorites
-        await axios.delete(`http://localhost:5005/api/favorites/${bookId}`, {
+        await axios.delete(`http://localhost:5005/favorites/${bookId}`, {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -165,7 +171,7 @@ const BookDetailPage = () => {
         });
       } else {
         // Add to favorites
-        await axios.post('http://localhost:5005/api/favorites', 
+        await axios.post('http://localhost:5005/favorites', 
           { bookId: parseInt(bookId) }, // Ensure bookId is a number
           { 
             headers: { 

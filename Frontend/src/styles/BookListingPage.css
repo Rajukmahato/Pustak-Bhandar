@@ -730,3 +730,51 @@
     font-size: 20px;
   }
 }
+
+.rating-distribution {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+  gap: 8px;
+}
+
+.rating-bar .stars {
+  width: 25px;
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.rating-bar .bar-container {
+  flex-grow: 1;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rating-bar .bar {
+  height: 100%;
+  background-color: #ffc107;
+  transition: width 0.3s ease;
+}
+
+.rating-bar .count {
+  width: 30px;
+  text-align: right;
+  color: #6c757d;
+}
+
+.review-count {
+  color: #6c757d;
+  font-size: 0.9em;
+  margin-left: 8px;
+  cursor: help;
+}

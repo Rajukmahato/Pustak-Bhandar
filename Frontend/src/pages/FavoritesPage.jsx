@@ -27,7 +27,7 @@ const FavoritesPage = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await axios.get('http://localhost:5005/api/favorites', {
+      const response = await axios.get('http://localhost:5005/favorites', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -60,7 +60,7 @@ const FavoritesPage = () => {
         return;
       }
 
-      await axios.delete(`http://localhost:5005/api/favorites/${bookId}`, {
+      await axios.delete(`http://localhost:5005/favorites/${bookId}`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

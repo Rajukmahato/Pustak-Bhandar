@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaBook, FaUser, FaTags, FaCog, FaPlus, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaBook, FaUser, FaTags, FaCog, FaPlus, FaSignOutAlt, FaComment } from 'react-icons/fa';
 import '../styles/AdminSidePanel.css';
 
 const AdminSidePanel = () => {
@@ -20,6 +20,7 @@ const AdminSidePanel = () => {
     { name: 'Manage Books', icon: <FaBook />, path: '/admin/books' },
     // { name: 'Create New Book', icon: <FaPlus />, path: '/admin/create-book' },
     { name: 'Manage Users', icon: <FaUser />, path: '/admin/users' },
+    { name: 'Manage Reviews', icon: <FaComment />, path: '/admin/reviews' },
     { name: 'Manage Categories', icon: <FaTags />, path: '/admin/categories' },
     { name: 'Admin Settings', icon: <FaCog />, path: '/admin/settings' },
   ];

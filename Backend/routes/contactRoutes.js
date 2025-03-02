@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Contact = require('../models/Contact');
+const Contact = require('../models/contact');
 
 // Define your routes here
-router.get('/contacts', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const contacts = await Contact.findAll();
     res.json(contacts);
@@ -12,7 +12,7 @@ router.get('/contacts', async (req, res) => {
   }
 });
 
-router.post('/contacts', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, email, message } = req.body;
     const newContact = await Contact.create({ name, email, message });

@@ -1,21 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviewController');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const bookReviewController = require('../controllers/bookReviewController');
+const { authMiddleware, adminMiddleware } = require('../middlewares/authMiddleware');
 
-// Get reviews for a book
+// Public routes (no authentication required)
+router.get('/book/summary', bookReviewController.getBookReviewsSummary);
 router.get('/book/:bookId', reviewController.getBookReviews);
 
-// Get review summary for multiple books
-router.get('/summary', reviewController.getReviewsSummary);
+// Protected routes (authentication required)
+router.post('/book', authMiddleware, reviewController.addReview);
+router.put('/book/:reviewId', authMiddleware, reviewController.updateReview);
+router.delete('/book/:reviewId', authMiddleware, reviewController.deleteReview);
 
-// Add a review (requires authentication)
-router.post('/', authMiddleware, reviewController.addReview);
-
-// Update a review (requires authentication)
-router.put('/:reviewId', authMiddleware, reviewController.updateReview);
-
-// Delete a review (requires authentication)
-router.delete('/:reviewId', authMiddleware, reviewController.deleteReview);
+// Admin routes
+router.get('/', adminMiddleware, reviewController.getAllReviews);
+router.delete('/admin/:reviewId', adminMiddleware, reviewController.adminDeleteReview);
 
 module.exports = router; 

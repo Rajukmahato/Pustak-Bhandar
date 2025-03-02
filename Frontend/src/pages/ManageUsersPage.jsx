@@ -19,7 +19,7 @@ const ManageUsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5005/api/users', {
+      const response = await axios.get('http://localhost:5005/users/auth', {
         params: {
           search: searchQuery,
           role: roleFilter,
@@ -54,14 +54,14 @@ const ManageUsersPage = () => {
     setCurrentPage(page);
   };
 
-  const handleEdit = (id) => {
-    // Logic to edit user
-  };
+  // const handleEdit = (id) => {
+  //   // Logic to edit user
+  // };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`http://localhost:5005/api/users/${id}`, {
+        await axios.delete(`http://localhost:5005/users/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           },
@@ -77,7 +77,7 @@ const ManageUsersPage = () => {
   const handleMakeAdmin = async (id) => {
     if (window.confirm('Are you sure you want to make this user an admin?')) {
       try {
-        await axios.put(`http://localhost:5005/auth/users/${id}/make-admin`, {}, {
+        await axios.put(`http://localhost:5005/users/auth/${id}/make-admin`, {}, {
           headers: {
             Authorization: `Bearer ${token}`
           },
@@ -132,7 +132,7 @@ const ManageUsersPage = () => {
                     <td>{user.isAdmin ? 'Admin' : 'User'}</td>
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
-                      <button onClick={() => handleEdit(user.id)}>Edit</button>
+                      {/* <button onClick={() => handleEdit(user.id)}>Edit</button> */}
                       <button onClick={() => handleDelete(user.id)}>Delete</button>
                       {!user.isAdmin && (
                         <button onClick={() => handleMakeAdmin(user.id)}>Make Admin</button>
